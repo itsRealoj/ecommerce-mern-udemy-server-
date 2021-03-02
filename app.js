@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose')
 require('dotenv').config()
+const userRoutes = require('./routes/user')
+
 
 // app
 const app = express();
@@ -12,10 +14,8 @@ mongoose.connect(process.env.DATABASE, {
 }).then(() => console.log('Database Connected!'))
 
 
-// routes
-app.get('/', (req, res) => {
-    res.send('hello world!');
-});
+// routes middleware
+app.use('/api', userRoutes)
 
 const port = process.env.PORT || 8000
 
