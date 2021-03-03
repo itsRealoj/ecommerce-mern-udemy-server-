@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const crypto = require('crypto'); //hash password
 const uuid = require('uuid');
-const { timeStamp } = require('console');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -39,17 +38,17 @@ const userSchema = new mongoose.Schema({
 
 // virtual field
 userSchema.virtual('password')
-.set(function(password) {
+.set((password) => {
     this._password = password
     this.salt = uuid()
     this.hashed_password = this.encryptPassword(password)
 })
-.get(function() {
+.get(() => {
     return this._password
 })
 
 userSchema.methods = {
-    encryptPassword: function(password) {
+    encryptPassword: ((password) => {
         if(!password) return '';
         try {
             return crypto.createHmac('sha1', this.salt)
@@ -58,7 +57,7 @@ userSchema.methods = {
         } catch (error) {
             return ''
         }
-    }
+    })
 }
 
 module.exports = mongoose.model('User', userSchema)
