@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-const crypto = require('crypto'); //hash password
-const uuid = require('uuid');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -15,9 +14,16 @@ const userSchema = new mongoose.Schema({
         required: true,
         maxLength: 32
     },
-    hashed_password: {
+    password: {
         type: String,
         required: true,
+        trim: true,
+        minLength: 8,
+        validate(value) {
+            if(!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
+                throw new Error('Password must contain at least one letter and one number')
+            }
+        },
     },
     about: {
         type: String,
@@ -37,27 +43,14 @@ const userSchema = new mongoose.Schema({
 );
 
 // virtual field
-userSchema.virtual('password')
-.set((password) => {
-    this._password = password
-    this.salt = uuid()
-    this.hashed_password = this.encryptPassword(password)
-})
-.get(() => {
-    return this._password
-})
 
-userSchema.methods = {
-    encryptPassword: ((password) => {
-        if(!password) return '';
-        try {
-            return crypto.createHmac('sha1', this.salt)
-            .update(password)
-            .digest('hex')
-        } catch (error) {
-            return ''
-        }
-    })
-}
+userSchema.pre('save', async function (next) {
+    const user = this;
+    if (user.isModified('password')) {
+      user.password = await bcrypt.hash(user.password, 8);
+    }
+    next();
+  });
+  
 
 module.exports = mongoose.model('User', userSchema)
