@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
         trim: true,
-        minLength: 8,
+        minLength: 6,
         validate(value) {
             if(!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
                 throw new Error('Password must contain at least one letter and one number')
@@ -42,8 +42,7 @@ const userSchema = new mongoose.Schema({
 {timestamps: true}
 );
 
-// virtual field
-
+// encrypt password before save
 userSchema.pre('save', async function (next) {
     const user = this;
     if (user.isModified('password')) {
